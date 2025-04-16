@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Line Profile Viewer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
+      margin-bottom: 8px;
+    }
+
+    .sidebar a {
+      color: #00ffe7;
+      text-decoration: none;
+    }
+
+    textarea {
+      width: 70%;
+      height: 400px;
+      margin-left: 220px;
+      padding: 20px;
+      background: #222;
+      color: #00ffb3;
+      font-family: monospace;
+      border: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h3>📋 Line Profiles</h3>
+  <ul>
+    <li><a href="#" onclick="loadProfile(0)">Profile 0</a></li>
+    <li><a href="#" onclick="loadProfile(1)">Profile 1</a></li>
+    <li><a href="#" onclick="loadProfile(3)">Profile 3</a></li>
+    <li><a href="#" onclick="loadProfile(10)">Profile 10</a></li>
+    <li><a href="#" onclick="loadProfile(101)">Profile 101</a></li>
+    <!-- Add more as needed -->
+  </ul>
+</div>
+
+<textarea id="profileOutput" readonly placeholder="Click a profile to load its command..."></textarea>
+
+<script>
+  const lineProfiles = {
+    0: `ont-lineprofile gpon profile-id 0 profile-name "line-profile_default_0"
+tcont 0 dba-profile-id 2
+tcont 4 dba-profile-id 100
+gem add 1 eth tcont 4
+gem add 2 eth tcont 4
+gem mapping 1 1 vlan 835
+gem mapping 1 2 vlan 910
+gem mapping 1 3 vlan 927
+gem mapping 1 4 vlan 928
+gem mapping 1 5 vlan 935
+gem mapping 1 6 vlan 942
+gem mapping 1 7 vlan 944
+gem mapping 2 0 vlan 941
+gem mapping 2 1 vlan 943
+gem mapping 2 2 vlan 948
+commit
+quit`,
+    1: `ont-lineprofile gpon profile-id 1 profile-name "SMARTOLT_FLEXIBLE_GPON"
+fec-upstream enable
+tr069-management enable
+mapping-mode priority
+tcont 1 dba-profile-id 10
+tcont 2 dba-profile-id 10
+tcont 3 dba-profile-id 10
+gem add 1 eth tcont 1
+gem add 2 eth tcont 2
+gem add 3 eth tcont 3
+gem mapping 1 1 priority 0
+gem mapping 2 1 priority 2
+gem mapping 3 1 priority 5
+commit
+quit`,
+    3: `ont-lineprofile gpon profile-id 3 profile-name "Generic_1_V942"
+tcont 1 dba-profile-id 10
+tcont 2 dba-profile-id 10
+gem add 1 eth tcont 1
+gem add 2 eth tcont 2
+gem mapping 1 1 vlan 942
+commit
+quit`,
+    10: `ont-lineprofile gpon profile-id 10 profile-name "line-profile_10"
+tcont 4 dba-profile-id 100
+gem add 1 eth tcont 4
+gem add 2 eth tcont 4
+gem mapping 1 1 vlan 941
+gem mapping 1 2 vlan 942
+gem mapping 1 3 vlan 943
+gem mapping 1 4 vlan 944
+gem mapping 1 5 vlan 948
+gem mapping 1 6 vlan 835
+gem mapping 2 0 vlan 2240
+gem mapping 2 1 vlan 238
+gem mapping 2 2 vlan 1048
+gem mapping 2 3 vlan 1017
+commit
+quit`,
+    101: `ont-lineprofile gpon profile-id 101 profile-name "1G"
+tcont 1 dba-profile-id 101
+gem add 1 eth tcont 1
+gem add 2 eth tcont 1
+gem add 3 eth tcont 1
+gem add 4 eth tcont 1
+gem add 5 eth tcont 1
+gem mapping 1 0 vlan 41
+gem mapping 1 2 vlan 210
+gem mapping 1 3 vlan 1158
+gem mapping 1 4 vlan 1571
+gem mapping 1 5 vlan 1589
+gem mapping 1 6 vlan 1122
+gem mapping 1 7 vlan 768
+gem mapping 2 0 vlan 2445
+gem mapping 2 1 vlan 297
+gem mapping 2 2 vlan 1820
+gem mapping 2 3 vlan 694
+gem mapping 2 4 vlan 465
+gem mapping 2 5 vlan 805
+gem mapping 2 6 vlan 783
+gem mapping 2 7 vlan 814
+gem mapping 3 0 vlan 3138
+gem mapping 3 1 vlan 1081
+gem mapping 3 2 vlan 1199
+gem mapping 3 3 vlan 660
+gem mapping 3 4 vlan 2728
+gem mapping 3 5 vlan 1042
+gem mapping 3 6 vlan 235
+gem mapping 3 7 vlan 270
+commit
+quit`
+  };
+
+  function loadProfile(id) {
+    const output = document.getElementById("profileOutput");
+    output.value = lineProfiles[id] || "Profile not found.";
+  }
+</script>
+
+</body>
+</html>
+

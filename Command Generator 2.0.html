@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Huawei ONU Script</title>
+  <link rel="shortcut icon" href="https://www.connect.net.pk/application/logo/connect.ico">
+  <meta name="description" content="Huawei ONT log command generator">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, #1f1c2c, #0f0e1a, #000);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    canvas#bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
+      animation: floatCard 8s ease-in-out infinite alternate;
+      transform-style: preserve-3d;
+    }
+
+    @keyframes floatCard {
+      0% { transform: rotateX(2deg) rotateY(-2deg) translateY(0px); }
+      100% { transform: rotateX(-2deg) rotateY(2deg) translateY(-10px); }
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .gradient-text {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #ffc857, #4dd0e1, #ff8a65);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0px 0px 10px rgba(255, 215, 0, 0.4);
+    }
+
+    textarea, input, button {
+      width: 100%;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+    }
+
+    textarea {
+      height: 150px;
+      font-family: monospace;
+      resize: vertical;
+      background-color: rgba(255,255,255,0.07);
+      color: #fff;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    input {
+      background-color: rgba(255,255,255,0.07);
+      color: #fff;
+    }
+
+    button {
+      background: linear-gradient(145deg, #00e0ff, #6a00ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+    }
+
+    .output {
+      white-space: pre-wrap;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 15px;
+      border-radius: 10px;
+      font-family: monospace;
+      color: #00ffe5;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 30px;
+    }
+
+    button.copy {
+      background: rgba(0, 224, 255, 0.1);
+      color: #00ffe5;
+      border: 1px solid rgba(0, 224, 255, 0.3);
+      font-size: 0.9rem;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 30px;
+      width: auto;
+      display: inline-block;
+    }
+
+    /* Sidebar styles */
+    .sidebar-toggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1001;
+      color: #00e0ff;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 15px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      transition: background 0.3s ease;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -240px;
+      width: 200px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.1);
+      padding: 20px;
+      box-shadow: 10px 0 25px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar h3 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar ul li {
+      margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+      color: #00ffe5;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+
+    .sidebar ul li a:hover {
+      color: #ffc857;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<!-- Sidebar Toggle -->
+<div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <h3>\N🔧 Menu</h3>
+  <ul>
+    <li><a href="100.80.html">Malir-HUA-100.80</a></li>
+    <li><a href="#">Malir-HUA-100.19</a></li>
+    <li><a href="#">PAF-FAISAL-100.24</a></li>
+    <li><a href="#">PAF-MASROOR-100.39</a></li>
+    <li><a href="#">PAF-MASROOR-100.7</a></li>
+    <li><a href="#">NOC-100.22</a></>
+    <li><a href="#">Tariq-ROAD-100.8</a></>
+  </ul>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+  <h1>
+    <img src="https://www-file.huawei.com/-/media/corporate/images/home/logo/huawei_logo.png" alt="Huawei Logo" style="height: 50px; vertical-align: middle; margin-right: 10px;">
+  </h1>
+
+  <textarea id="inputData" placeholder="Paste autofind ONT log here..."></textarea>
+  <input type="number" id="servicePortIdInput" placeholder="Enter starting service-port ID (e.g., 99)">
+  <input type="number" id="vlanidinput" placeholder="Enter VLAN ID (e.g., 99)">
+  <input type="number" id="lineProfileInput" placeholder="Enter Line Profile ID (e.g., 10)">
+  <input type="number" id="srvProfileInput" placeholder="Enter Service Profile ID (e.g., 20)">
+  <input type="number" id="gemportInput" placeholder="Enter GEM Port (e.g., 1)">
+  <button onclick="parseONT()">🚀 Generate Commands</button>
+
+  <h2>ONT Add Commands (GPON Interface)</h2>
+  <div id="ontOutput" class="output"></div>
+  <button class="copy" onclick="copyToClipboard('ontOutput')">📋 Copy ONT Commands</button>
+
+  <h2>Service-Port Commands (Config Mode)</h2>
+  <div id="servicePortOutput" class="output"></div>
+  <button class="copy" onclick="copyToClipboard('servicePortOutput')">📋 Copy Service-Port Commands</button>
+</div>
+
+<script>
+  function parseONT() {
+    const input = document.getElementById("inputData").value;
+    const lines = input.trim().split('\n').map(line => line.trim());
+
+    let servicePortId = parseInt(document.getElementById("servicePortIdInput").value);
+    let vlan = parseInt(document.getElementById("vlanidinput").value);
+    let lineProfile = parseInt(document.getElementById("lineProfileInput").value);
+    let srvProfile = parseInt(document.getElementById("srvProfileInput").value);
+    let gemport = parseInt(document.getElementById("gemportInput").value);
+
+    if (
+      isNaN(servicePortId) ||
+      isNaN(vlan) ||
+      isNaN(lineProfile) ||
+      isNaN(srvProfile) ||
+      isNaN(gemport)
+    ) {
+      alert("Please fill in all fields!");
+      return;
+    }
+
+    let ontOutput = '';
+    let servicePortOutput = '';
+    let sValue = '';
+    let pValue = '';
+    let sn = '';
+    let ontId = 0;
+
+    for (let line of lines) {
+      if (line.includes("F/S/P")) {
+        const fspRaw = line.split(':')[1].trim();
+        const fspParts = fspRaw.split('/');
+        if (fspParts.length === 3) {
+          sValue = fspParts[1];
+          pValue = fspParts[2];
+        }
+      }
+
+      if (line.includes("Ont SN")) {
+        const match = line.match(/Ont SN\s+:\s+([A-Fa-f0-9:]+)/);
+        if (match && match[1]) {
+          sn = match[1];
+        }
+      }
+
+      if (sValue && pValue && sn) {
+        ontOutput += `\nont add ${pValue} sn-auth "${sn}" omci ont-lineprofile-id ${lineProfile} ont-srvprofile-id ${srvProfile} desc "ONT_NO_DESCRIPTION"\n`;
+        servicePortOutput += `\nservice-port ${servicePortId} vlan ${vlan} gpon 0/${sValue}/${pValue} ont ${ontId} gemport ${gemport} multi-service user-vlan ${vlan} tag-transform translate\n`;
+        servicePortId++;
+        ontId++;
+        sValue = '';
+        pValue = '';
+        sn = '';
+      }
+    }
+
+    document.getElementById("ontOutput").textContent = ontOutput.trim();
+    document.getElementById("servicePortOutput").textContent = servicePortOutput.trim();
+  }
+
+  function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    if (text.trim() === "") {
+      alert("There's nothing to copy.");
+      return;
+    }
+    navigator.clipboard.writeText(text)
+      .then(() => alert("Copied to clipboard!"))
+      .catch(() => alert("Copy failed. Try manually."));
+  }
+
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("active");
+  }
+
+  // Particle Background
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  for (let i = 0; i < 70; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.5,
+      dx: (Math.random() - 0.5) * 0.5,
+      dy: (Math.random() - 0.5) * 0.5,
+      color: `hsl(${Math.random() * 360}, 100%, 70%)`
+    });
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    }
+
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+</script>
+
+</body>
+</html>
