@@ -1,2 +1,2 @@
-# HUAWEI-ONU
+# Huawei ONU Script
 Huawei ONU Script
